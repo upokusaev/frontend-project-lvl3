@@ -2,11 +2,11 @@ install:
 	npm install
 
 dev:
-	npx webpack-dev-server
+	npm run dev
 
 build:
 	rm -rf dist
-	NODE_ENV=production npx webpack
+	npm run build
 
 lint:
 	npx eslint .
