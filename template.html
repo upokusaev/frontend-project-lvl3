@@ -7,19 +7,53 @@
   <title>RSS Reader</title>
 </head>
 <body>
+
+  <!-- Modal -->
+  <div class="modal fade" id="mod" tabindex="-1" role="dialog" aria-labelledby="modLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modLabel">Modal title</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          ...
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрыть</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <main role="main" class="container">
     <div class="row">
-    <div class="jumbotron col">
-      <h1 class="display-4">RSS Reader</h1>
-      <hr class="my-4">
-      <div class="input-group flex-nowrap">
-        <div class="input-group-prepend">
-          <span class="input-group-text" id="addon-wrapping">RSS:</span>
-        </div>
-        <input type="text" class="form-control" placeholder="Добавьте новый сайт для отслеживания" aria-label="RSS" aria-describedby="addon-wrapping">
+      <div class="jumbotron col">
+        <h1 class="display-4">RSS Reader</h1>
+        <hr class="my-4">
+        <form id="my-form">
+          <div class="form-group">
+            <input type="text" class="form-control" id="inputRss" placeholder="Добавьте ссылку в это поле">
+          </div>
+          <button type="submit" class="add btn btn-primary">Добавить</button>
+          <small id="errorInput"></small>
+        </form>
       </div>
-      <button type="button" class="btn add btn-primary">Добавить</button>
     </div>
+    <div class="row">
+      <div class="a preloader closed col-12" style="--n: 5;">
+        <div class="dot" style="--i: 0;"></div>
+        <div class="dot" style="--i: 1;"></div>
+        <div class="dot" style="--i: 2;"></div>
+        <div class="dot" style="--i: 3;"></div>
+        <div class="dot" style="--i: 4;"></div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="list-group list-feeds col-4"></div>
+      <div class="list-group list-news col-8"></div>
     </div>
   </main>
 </body>

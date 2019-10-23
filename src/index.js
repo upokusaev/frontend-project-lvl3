@@ -1,5 +1,5 @@
 import './style.scss';
-import watchInput from './watchInput';
+import 'bootstrap/js/dist/modal';
+import app from './app';
 
-console.log('Test index.js');
-watchInput();
+app();
