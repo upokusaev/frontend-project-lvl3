@@ -88,7 +88,7 @@ export default () => {
       const feedKeys = Object.keys(state.listFeeds);
       feedKeys.forEach((feedKey) => {
         axios.get(new URL(`/${feedKey}`, 'https://cors-anywhere.herokuapp.com'))
-          .then(parse)
+          .then((response) => parse(response.data))
           .then((feedObj) => filterNews(state, feedKey, feedObj))
           .then((feedObj) => updateState(feedKey, feedObj))
           .then(renderNews)
@@ -106,7 +106,7 @@ export default () => {
     if (feedLink) {
       preloaderOn();
       axios.get(new URL(`/${feedLink}`, 'https://cors-anywhere.herokuapp.com'))
-        .then(parse)
+        .then((response) => parse(response.data))
         .then((feed) => updateState(feedLink, feed))
         .then(renderFeed)
         .then(renderNews)
