@@ -37,12 +37,15 @@
           <div class="form-group">
             <input type="text" class="form-control" id="inputRss" placeholder="Добавьте ссылку в это поле">
           </div>
-          <button type="submit" class="add btn btn-primary">Добавить</button>
+          <button type="submit" class="add btn btn-primary">
+            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+            Добавить
+          </button>
           <small id="errorInput"></small>
         </form>
       </div>
     </div>
-    <div class="row">
+    <!-- <div class="row">
       <div class="a preloader closed col-12" style="--n: 5;">
         <div class="dot" style="--i: 0;"></div>
         <div class="dot" style="--i: 1;"></div>
@@ -50,7 +53,7 @@
         <div class="dot" style="--i: 3;"></div>
         <div class="dot" style="--i: 4;"></div>
       </div>
-    </div>
+    </div> -->
     <div class="row">
       <div class="list-group list-feeds col-4"></div>
       <div class="list-group list-news col-8"></div>

@@ -54,10 +54,10 @@ export default () => {
 
   // Preloader
   const preloaderOn = () => {
-    document.querySelector('.preloader').classList.remove('closed');
+    document.querySelector('span[role="status"]').classList.remove('d-none');
   };
   const preloaderOff = () => {
-    document.querySelector('.preloader').classList.add('closed');
+    document.querySelector('span[role="status"]').classList.add('d-none');
   };
 
   // Show error
