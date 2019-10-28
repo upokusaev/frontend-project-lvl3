@@ -2,7 +2,6 @@ export const renderFeed = (feed) => {
   const listFeeds = document.querySelector('.list-feeds');
   const newFeed = document.createElement('div');
   newFeed.classList.add('list-group-item');
-
   newFeed.innerHTML = `
     <h5 class="mb-1">${feed.title}</h5>
     <p class="mb-1">${feed.description}</p>

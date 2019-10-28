@@ -1,16 +1,18 @@
 export default (data) => {
-  const result = {};
   const parser = new DOMParser();
   const doc = parser.parseFromString(data, 'application/xml');
-  result.title = doc.querySelector('title').textContent;
-  result.description = doc.querySelector('description').textContent;
-  result.news = {};
   const [...items] = doc.querySelectorAll('item');
-  items.forEach((item) => {
-    result.news[`${item.querySelector('link').textContent}`] = ({
+  const news = items.reduce((acc, item) => ({
+    ...acc,
+    [item.querySelector('link').textContent]: {
       title: item.querySelector('title').textContent,
       description: item.querySelector('description').textContent,
-    });
-  });
-  return result;
+    },
+  }), {});
+
+  return {
+    title: doc.querySelector('title').textContent,
+    description: doc.querySelector('description').textContent,
+    news,
+  };
 };
