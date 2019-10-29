@@ -1,2 +1,10 @@
 @import "~bootstrap/scss/bootstrap";
-@import "./main.scss";
+
+.form-control:focus  { 
+  outline: none;
+  box-shadow: none;
+}
+
+.modal-body img {
+  max-width: 100%;
+}

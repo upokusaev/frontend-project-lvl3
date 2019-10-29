@@ -17,7 +17,7 @@ export const renderNews = (feed) => {
     const newsBlock = document.createElement('div');
     newsBlock.innerHTML = `
     <div class="list-group-item">
-      <a href="${link}">${feed.news[link].title}</a>
+      <a href="${link}" style="display: block;">${feed.news[link].title}</a>
       <button type="button" class="more-about-news btn btn-outline-info" data-toggle="modal" data-target="#mod">Подробнее</button>
     </div>`;
     newsBlock.querySelector('button').addEventListener('click', () => {
