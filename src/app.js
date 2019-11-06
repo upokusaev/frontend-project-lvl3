@@ -1,8 +1,10 @@
 import { watch } from 'melanke-watchjs';
 import isURL from 'validator/lib/isURL';
 import axios from 'axios';
+import i18next from 'i18next';
 import parse from './parser';
 import { renderFeed, renderNews } from './render';
+import i18nextInit from './i18next';
 
 export default () => {
   const cors = 'https://cors-anywhere.herokuapp.com';
@@ -11,6 +13,7 @@ export default () => {
   const input = form.querySelector('#inputRss');
   const button = form.querySelector('button.add');
   const errElement = document.querySelector('#errorInput');
+  i18nextInit();
 
   /* -------------------- Model -------------------- */
 
@@ -94,30 +97,30 @@ export default () => {
   });
 
   /* -------------------- View -------------------- */
-  const showError = (textError) => { errElement.textContent = textError; };
+  const showError = () => { errElement.textContent = i18next.t(state.formState); };
   const hideError = () => { errElement.textContent = ''; };
   const showSpinner = () => { document.querySelector('span[role="status"]').classList.remove('d-none'); };
   const hideSpinner = () => { document.querySelector('span[role="status"]').classList.add('d-none'); };
 
+  const cleanStyleInput = () => {
+    input.classList.remove('border-danger');
+    input.classList.remove('border-success');
+    button.removeAttribute('disabled');
+  };
+
+  const setStyleInputError = () => {
+    input.classList.add('border-danger');
+    input.classList.remove('border-success');
+    button.setAttribute('disabled', true);
+  };
+
+  const setStyleInputСorrect = () => {
+    input.classList.add('border-success');
+    input.classList.remove('border-danger');
+    button.removeAttribute('disabled');
+  };
+
   const renderForm = () => {
-    const cleanStyleInput = () => {
-      input.classList.remove('border-danger');
-      input.classList.remove('border-success');
-      button.removeAttribute('disabled');
-    };
-
-    const setStyleInputError = () => {
-      input.classList.add('border-danger');
-      input.classList.remove('border-success');
-      button.setAttribute('disabled', true);
-    };
-
-    const setStyleInputСorrect = () => {
-      input.classList.add('border-success');
-      input.classList.remove('border-danger');
-      button.removeAttribute('disabled');
-    };
-
     switch (state.formState) {
       case 'waiting':
         hideSpinner();
@@ -127,12 +130,12 @@ export default () => {
         break;
       case 'duplicateUrl':
         setStyleInputError();
-        showError('Данный поток уже добавлен');
+        showError();
         break;
       case 'invalid':
         hideSpinner();
         setStyleInputError();
-        showError('Ошибка. Проверьте URL и попробуйте снова...');
+        showError();
         break;
       case 'valid':
         setStyleInputСorrect();
@@ -145,7 +148,7 @@ export default () => {
         break;
       case 'failed':
         hideSpinner();
-        showError('Ошибка. Проверьте URL и попробуйте снова...');
+        showError();
         break;
       default:
         throw new Error(`Wrond type: state.formState = ${state.formState}`);
