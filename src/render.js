@@ -13,6 +13,7 @@ export const renderFeed = (feeds) => {
     <p class="mb-1">${item.description}</p>
     `;
     feedsContainer.insertBefore(newFeed, feedsContainer.firstChild);
+    return newFeed;
   });
 };
 
@@ -34,5 +35,6 @@ export const renderNews = (news) => {
       modal.querySelector('.modal-body').innerHTML = item.description;
     });
     newsContainer.insertBefore(newsBlock, newsContainer.firstChild);
+    return newsBlock;
   });
 };
