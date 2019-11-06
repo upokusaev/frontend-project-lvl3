@@ -3,162 +3,169 @@ import isURL from 'validator/lib/isURL';
 import axios from 'axios';
 import parse from './parser';
 import { renderFeed, renderNews } from './render';
-import filterNews from './filter';
-
 
 export default () => {
+  const cors = 'https://cors-anywhere.herokuapp.com';
+  const checkInterval = 5000;
   const form = document.querySelector('#my-form');
   const input = form.querySelector('#inputRss');
-  const submit = form.querySelector('button.add');
+  const button = form.querySelector('button.add');
+  const errElement = document.querySelector('#errorInput');
 
   /* -------------------- Model -------------------- */
 
   const state = {
-    input: {
-      valid: 'clean',
-      submit: null,
-    },
-    update: false,
-    listFeeds: {},
-    error: '',
-    preloader: 'off',
+    formState: 'waiting',
+    updateState: 'stopped',
+    feeds: [],
+    news: [],
   };
 
-  const checkValidInput = (value) => {
-    if (value === '') {
-      state.error = '';
-      state.input.valid = 'clean';
-    } else if (value in state.listFeeds) {
-      state.error = 'Данный поток уже добавлен';
-      state.input.valid = 'error';
-    } else if (!isURL(value)) {
-      state.error = 'Неверный URL';
-      state.input.valid = 'error';
-    } else {
-      state.error = '';
-      state.input.valid = 'correct';
-    }
+  const getCurrentUrl = () => {
+    const formData = new FormData(form);
+    return formData.get('url');
+  };
+
+  const createCorsUrl = (url) => new URL(`/${url}`, cors);
+
+  const setFormState = (newState) => {
+    state.formState = newState;
+  };
+
+  const setUpdateState = (newState) => {
+    state.updateState = newState;
+  };
+
+  const formValidation = (url) => {
+    if (url === '') return 'waiting';
+    const listAddedUrl = state.feeds.map(({ link }) => link);
+    if (listAddedUrl.includes(url)) return 'duplicateUrl';
+    return isURL(url) ? 'valid' : 'invalid';
   };
 
   /* -------------------- Controller -------------------- */
 
-  // Input validation
-  input.addEventListener('input', (e) => {
-    checkValidInput(e.target.value);
-  });
-
-  // Add feed to state
-  const updateState = (feedKey, feedObj) => {
-    if (feedKey in state.listFeeds) {
-      const newsKeys = Object.keys(feedObj.news);
-      newsKeys.forEach((newsKey) => {
-        state.listFeeds[feedKey].news[newsKey] = feedObj.news[newsKey];
-      });
-    } else {
-      state.listFeeds[feedKey] = feedObj;
-    }
-    return feedObj;
+  const addNewFeed = (feed) => {
+    state.feeds.push({ ...feed, link: getCurrentUrl() });
   };
 
-  // Check updates feeds
-  const checkUpdates = () => {
-    setTimeout(() => {
-      const feedKeys = Object.keys(state.listFeeds);
-      feedKeys.forEach((feedKey) => {
-        axios.get(new URL(`/${feedKey}`, 'https://cors-anywhere.herokuapp.com'))
-          .then((response) => parse(response.data))
-          .then((feedObj) => filterNews(state, feedKey, feedObj))
-          .then((feedObj) => updateState(feedKey, feedObj))
-          .then(renderNews);
-      });
-      checkUpdates();
-    }, 5000);
+  const addNewNews = (news) => {
+    const listAddedLinks = state.news.map(({ link }) => link);
+    const newNews = news.filter(({ link }) => !listAddedLinks.includes(link));
+    newNews.map((item) => state.news.push(item));
   };
 
-  // Add feed
-  const addFeed = (feedLink) => {
-    state.preloader = 'on';
-    axios.get(new URL(`/${feedLink}`, 'https://cors-anywhere.herokuapp.com'))
+  const uploadFeed = (url) => {
+    axios.get(url)
       .then((response) => parse(response.data))
-      .then((feedObj) => updateState(feedLink, feedObj))
-      .then(renderFeed)
-      .then(renderNews)
-      .then(() => {
-        input.value = '';
-        checkValidInput(input.value);
+      .then(({ feed, news }) => {
+        addNewFeed(feed);
+        addNewNews(news);
       })
-      .catch(() => {
-        state.error = 'Ошибка. Проверьте URL и попробуйте снова...';
-      })
-      .finally(() => {
-        state.preloader = 'off';
-        state.update = true;
-      });
+      .then(() => setUpdateState('launched'))
+      .then(() => setFormState('waiting'))
+      .catch(() => setFormState('failed'));
   };
+
+  const startCheckingUpdates = () => {
+    setTimeout(() => {
+      state.feeds.map(({ link }) => {
+        const url = createCorsUrl(link);
+        return axios.get(url)
+          .then((response) => parse(response.data))
+          .then(({ news }) => addNewNews(news));
+      });
+      startCheckingUpdates();
+    }, checkInterval);
+  };
+
+  // Events
+  input.addEventListener('input', () => {
+    state.formState = formValidation(getCurrentUrl());
+  });
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
-    const feedLink = input.value;
-    if (feedLink) {
-      addFeed(feedLink);
+    if (state.formState === 'valid') {
+      setFormState('loading');
+      const url = createCorsUrl(getCurrentUrl());
+      uploadFeed(url);
     }
   });
 
   /* -------------------- View -------------------- */
+  const showError = (textError) => { errElement.textContent = textError; };
+  const hideError = () => { errElement.textContent = ''; };
+  const showSpinner = () => { document.querySelector('span[role="status"]').classList.remove('d-none'); };
+  const hideSpinner = () => { document.querySelector('span[role="status"]').classList.add('d-none'); };
 
-  // Input validation
+  const renderForm = () => {
+    const cleanStyleInput = () => {
+      input.classList.remove('border-danger');
+      input.classList.remove('border-success');
+      button.removeAttribute('disabled');
+    };
 
-  const cleanStyleInput = () => {
-    input.classList.remove('border-danger');
-    input.classList.remove('border-success');
-    submit.removeAttribute('disabled');
-  };
+    const setStyleInputError = () => {
+      input.classList.add('border-danger');
+      input.classList.remove('border-success');
+      button.setAttribute('disabled', true);
+    };
 
-  const setStyleInputError = () => {
-    input.classList.add('border-danger');
-    input.classList.remove('border-success');
-    submit.setAttribute('disabled', true);
-  };
+    const setStyleInputСorrect = () => {
+      input.classList.add('border-success');
+      input.classList.remove('border-danger');
+      button.removeAttribute('disabled');
+    };
 
-  const setStyleInputСorrect = () => {
-    input.classList.add('border-success');
-    input.classList.remove('border-danger');
-    submit.removeAttribute('disabled');
-  };
-
-  const changeInput = () => {
-    switch (state.input.valid) {
-      case 'clean':
+    switch (state.formState) {
+      case 'waiting':
+        hideSpinner();
         cleanStyleInput();
+        form.reset();
+        hideError();
         break;
-      case 'error':
+      case 'duplicateUrl':
         setStyleInputError();
+        showError('Данный поток уже добавлен');
         break;
-      case 'correct':
+      case 'invalid':
+        hideSpinner();
+        setStyleInputError();
+        showError('Ошибка. Проверьте URL и попробуйте снова...');
+        break;
+      case 'valid':
         setStyleInputСorrect();
+        hideError();
+        break;
+      case 'loading':
+        showSpinner();
+        cleanStyleInput();
+        hideError();
+        break;
+      case 'failed':
+        hideSpinner();
+        showError('Ошибка. Проверьте URL и попробуйте снова...');
         break;
       default:
-        throw new Error(`Неверный тип: state.input.valid = ${state.input.valid}`);
+        throw new Error(`Wrond type: state.formState = ${state.formState}`);
     }
   };
 
-  // Preloader
-  const switchPreloader = () => {
-    if (state.preloader === 'on') {
-      document.querySelector('span[role="status"]').classList.remove('d-none');
-    } else {
-      document.querySelector('span[role="status"]').classList.add('d-none');
+  // Watchers
+  watch(state, 'formState', renderForm);
+
+  watch(state, 'feeds', () => {
+    renderFeed(state.feeds);
+  });
+
+  watch(state, 'news', () => {
+    renderNews(state.news);
+  });
+
+  watch(state, 'updateState', () => {
+    if (state.updateState === 'launched') {
+      startCheckingUpdates();
     }
-  };
-
-  // Errors
-  const showError = () => {
-    const errElement = document.querySelector('#errorInput');
-    errElement.textContent = state.error;
-  };
-
-  watch(state.input, 'valid', changeInput);
-  watch(state, 'error', showError);
-  watch(state, 'preloader', switchPreloader);
-  watch(state, 'update', checkUpdates);
+  });
 };
