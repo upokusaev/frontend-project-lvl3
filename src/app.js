@@ -47,23 +47,22 @@ export default () => {
     newNews.map((item) => state.news.push(item));
   };
 
-  const startCheckingUpdates = () => {
-    if (timerId) {
-      clearTimeout(timerId);
-    }
-    checkUpdates();
-  };
-
   const checkUpdates = () => {
     timerId = setTimeout(() => {
       state.feeds.map(({ link }) => {
         const url = createCorsUrl(link);
         return axios.get(url)
           .then((response) => parse(response.data))
-          .then(({ news }) => addNewNews(news))
-          .then(startCheckingUpdates);
+          .then(({ news }) => addNewNews(news));
       });
+      checkUpdates();
     }, checkInterval);
+  };
+
+  const startCheckingUpdates = () => {
+    if (!timerId) {
+      checkUpdates();
+    }
   };
 
   const uploadFeed = (url) => {
@@ -73,8 +72,8 @@ export default () => {
         addNewFeed(title, description);
         addNewNews(news);
       })
-      .then(() => startCheckingUpdates())
       .then(() => setFormState('waiting'))
+      .then(startCheckingUpdates)
       .catch(() => setFormState('failed'));
   };
 
