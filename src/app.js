@@ -13,6 +13,7 @@ export default () => {
   const input = form.querySelector('#inputRss');
   const button = form.querySelector('button.add');
   const errElement = document.querySelector('#errorInput');
+  const spinner = document.querySelector('span[role="status"]');
   i18nextInit();
 
   /* -------------------- Model -------------------- */
@@ -98,8 +99,8 @@ export default () => {
   /* -------------------- View -------------------- */
   const showError = () => { errElement.textContent = i18next.t(state.formState); };
   const hideError = () => { errElement.textContent = ''; };
-  const showSpinner = () => { document.querySelector('span[role="status"]').classList.remove('d-none'); };
-  const hideSpinner = () => { document.querySelector('span[role="status"]').classList.add('d-none'); };
+  const showSpinner = () => { spinner.classList.remove('d-none'); };
+  const hideSpinner = () => { spinner.classList.add('d-none'); };
 
   const cleanStyleInput = () => {
     input.classList.remove('border-danger');
