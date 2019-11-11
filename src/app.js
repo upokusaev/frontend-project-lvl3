@@ -7,8 +7,9 @@ import { renderFeed, renderNews } from './render';
 import i18nextInit from './i18next';
 
 export default () => {
-  const cors = 'https://cors-anywhere.herokuapp.com';
+  let timerId;
   const checkInterval = 5000;
+  const cors = 'https://cors-anywhere.herokuapp.com';
   const form = document.querySelector('#my-form');
   const input = form.querySelector('#inputRss');
   const button = form.querySelector('button.add');
@@ -21,7 +22,6 @@ export default () => {
   const state = {
     formState: 'waiting',
     formCurrentUrl: '',
-    updateState: 'stopped',
     feeds: [],
     news: [],
   };
@@ -30,10 +30,6 @@ export default () => {
 
   const setFormState = (newState) => {
     state.formState = newState;
-  };
-
-  const setUpdateState = (newState) => {
-    state.updateState = newState;
   };
 
   const getFormState = (url) => {
@@ -55,6 +51,26 @@ export default () => {
     newNews.map((item) => state.news.push(item));
   };
 
+  const startCheckingUpdates = () => {
+    if (timerId) {
+      clearTimeout(timerId);
+    }
+    checkUpdates();
+  };
+
+  const checkUpdates = () => {
+    timerId = setTimeout(() => {
+      console.log('Запустилась проверка');
+      state.feeds.map(({ link }) => {
+        const url = createCorsUrl(link);
+        return axios.get(url)
+          .then((response) => parse(response.data))
+          .then(({ news }) => addNewNews(news))
+          .then(startCheckingUpdates);
+      });
+    }, checkInterval);
+  };
+
   const uploadFeed = (url) => {
     axios.get(url)
       .then((response) => parse(response.data))
@@ -62,21 +78,10 @@ export default () => {
         addNewFeed(title, description);
         addNewNews(news);
       })
-      .then(() => setUpdateState('launched'))
+      // .then(() => setUpdateState('launched'))
+      .then(() => startCheckingUpdates())
       .then(() => setFormState('waiting'))
       .catch(() => setFormState('failed'));
-  };
-
-  const startCheckingUpdates = () => {
-    setTimeout(() => {
-      state.feeds.map(({ link }) => {
-        const url = createCorsUrl(link);
-        return axios.get(url)
-          .then((response) => parse(response.data))
-          .then(({ news }) => addNewNews(news));
-      });
-      startCheckingUpdates();
-    }, checkInterval);
   };
 
   // Events
@@ -163,11 +168,5 @@ export default () => {
 
   watch(state, 'news', () => {
     renderNews(state.news);
-  });
-
-  watch(state, 'updateState', () => {
-    if (state.updateState === 'launched') {
-      startCheckingUpdates();
-    }
   });
 };
