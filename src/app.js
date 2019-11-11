@@ -2,6 +2,7 @@ import { watch } from 'melanke-watchjs';
 import isURL from 'validator/lib/isURL';
 import axios from 'axios';
 import i18next from 'i18next';
+import _ from 'lodash';
 import parse from './parser';
 import { renderFeed, renderNews } from './render';
 import i18nextInit from './i18next';
@@ -16,8 +17,6 @@ export default () => {
   const errElement = document.querySelector('#errorInput');
   const spinner = document.querySelector('span[role="status"]');
   i18nextInit();
-
-  /* -------------------- Model -------------------- */
 
   const state = {
     formState: 'waiting',
@@ -39,15 +38,12 @@ export default () => {
     return isURL(url) ? 'valid' : 'invalid';
   };
 
-  /* -------------------- Controller -------------------- */
-
   const addNewFeed = (title, description) => {
     state.feeds.push({ title, description, link: state.formCurrentUrl });
   };
 
   const addNewNews = (news) => {
-    const listAddedLinks = state.news.map(({ link }) => link);
-    const newNews = news.filter(({ link }) => !listAddedLinks.includes(link));
+    const newNews = _.difference(news, state.news);
     newNews.map((item) => state.news.push(item));
   };
 
@@ -60,7 +56,6 @@ export default () => {
 
   const checkUpdates = () => {
     timerId = setTimeout(() => {
-      console.log('Запустилась проверка');
       state.feeds.map(({ link }) => {
         const url = createCorsUrl(link);
         return axios.get(url)
@@ -78,13 +73,11 @@ export default () => {
         addNewFeed(title, description);
         addNewNews(news);
       })
-      // .then(() => setUpdateState('launched'))
       .then(() => startCheckingUpdates())
       .then(() => setFormState('waiting'))
       .catch(() => setFormState('failed'));
   };
 
-  // Events
   input.addEventListener('input', (e) => {
     const currentUrl = e.target.value;
     state.formCurrentUrl = currentUrl;
@@ -100,7 +93,6 @@ export default () => {
     }
   });
 
-  /* -------------------- View -------------------- */
   const showError = () => { errElement.textContent = i18next.t(state.formState); };
   const hideError = () => { errElement.textContent = ''; };
   const showSpinner = () => { spinner.classList.remove('d-none'); };
@@ -159,7 +151,6 @@ export default () => {
     }
   };
 
-  // Watchers
   watch(state, 'formState', renderForm);
 
   watch(state, 'feeds', () => {
