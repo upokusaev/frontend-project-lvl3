@@ -19,14 +19,10 @@ export default () => {
 
   const state = {
     formState: 'waiting',
+    formCurrentUrl: '',
     updateState: 'stopped',
     feeds: [],
     news: [],
-  };
-
-  const getCurrentUrl = () => {
-    const formData = new FormData(form);
-    return formData.get('url');
   };
 
   const createCorsUrl = (url) => new URL(`/${url}`, cors);
@@ -49,7 +45,7 @@ export default () => {
   /* -------------------- Controller -------------------- */
 
   const addNewFeed = (feed) => {
-    state.feeds.push({ ...feed, link: getCurrentUrl() });
+    state.feeds.push({ ...feed, link: state.formCurrentUrl });
   };
 
   const addNewNews = (news) => {
@@ -83,15 +79,18 @@ export default () => {
   };
 
   // Events
-  input.addEventListener('input', () => {
-    state.formState = formValidation(getCurrentUrl());
+  input.addEventListener('input', (e) => {
+    const currentUrl = e.target.value;
+    state.formCurrentUrl = currentUrl;
+    state.formState = formValidation(currentUrl);
+    console.log(currentUrl);
   });
 
   form.addEventListener('submit', (e) => {
     e.preventDefault();
     if (state.formState === 'valid') {
       setFormState('loading');
-      const url = createCorsUrl(getCurrentUrl());
+      const url = createCorsUrl(state.formCurrentUrl);
       uploadFeed(url);
     }
   });
