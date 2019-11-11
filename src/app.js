@@ -35,7 +35,7 @@ export default () => {
     state.updateState = newState;
   };
 
-  const formValidation = (url) => {
+  const getFormState = (url) => {
     if (url === '') return 'waiting';
     const listAddedUrl = state.feeds.map(({ link }) => link);
     if (listAddedUrl.includes(url)) return 'duplicateUrl';
@@ -82,7 +82,7 @@ export default () => {
   input.addEventListener('input', (e) => {
     const currentUrl = e.target.value;
     state.formCurrentUrl = currentUrl;
-    state.formState = formValidation(currentUrl);
+    state.formState = getFormState(currentUrl);
     console.log(currentUrl);
   });
 
