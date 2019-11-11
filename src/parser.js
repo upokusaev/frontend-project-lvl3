@@ -9,13 +9,9 @@ export default (data) => {
     description: item.querySelector('description').textContent,
   }));
 
-  const feed = {
+  return {
     title: doc.querySelector('title').textContent,
     description: doc.querySelector('description').textContent,
-  };
-
-  return {
-    feed,
     news,
   };
 };

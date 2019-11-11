@@ -45,8 +45,8 @@ export default () => {
 
   /* -------------------- Controller -------------------- */
 
-  const addNewFeed = (feed) => {
-    state.feeds.push({ ...feed, link: state.formCurrentUrl });
+  const addNewFeed = (title, description) => {
+    state.feeds.push({ title, description, link: state.formCurrentUrl });
   };
 
   const addNewNews = (news) => {
@@ -58,8 +58,8 @@ export default () => {
   const uploadFeed = (url) => {
     axios.get(url)
       .then((response) => parse(response.data))
-      .then(({ feed, news }) => {
-        addNewFeed(feed);
+      .then(({ title, description, news }) => {
+        addNewFeed(title, description);
         addNewNews(news);
       })
       .then(() => setUpdateState('launched'))
@@ -84,7 +84,6 @@ export default () => {
     const currentUrl = e.target.value;
     state.formCurrentUrl = currentUrl;
     state.formState = getFormState(currentUrl);
-    console.log(currentUrl);
   });
 
   form.addEventListener('submit', (e) => {
