@@ -49,13 +49,11 @@ export default () => {
 
   const checkUpdates = () => {
     timerId = setTimeout(() => {
-      state.feeds.map(({ link }) => {
-        const url = createCorsUrl(link);
-        return axios.get(url)
-          .then((response) => parse(response.data))
-          .then(({ news }) => addNewNews(news));
-      });
-      checkUpdates();
+      const responses = state.feeds.map(({ link }) => axios.get(createCorsUrl(link)));
+      Promise.all(responses)
+        .then((responseList) => responseList.map((r) => parse(r.data)))
+        .then((docs) => docs.map(({ news }) => addNewNews(news)))
+        .then(() => checkUpdates());
     }, checkInterval);
   };
 
