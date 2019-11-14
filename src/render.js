@@ -32,7 +32,10 @@ export const renderNews = (news) => {
     newsBlock.querySelector('button').addEventListener('click', () => {
       const modal = document.querySelector('#mod');
       modal.querySelector('.modal-title').textContent = item.title;
-      modal.querySelector('.modal-body').innerHTML = item.description;
+      const modalBody = modal.querySelector('.modal-body');
+      modalBody.innerHTML = item.description;
+      const images = modalBody.querySelectorAll('img');
+      images.forEach((img) => img.classList.add('img-fluid'));
     });
     newsContainer.insertBefore(newsBlock, newsContainer.firstChild);
     return newsBlock;
